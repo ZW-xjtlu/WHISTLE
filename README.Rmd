@@ -1,0 +1,158 @@
+---
+title: "An Introduction to *WHSITLE* "
+date: "`r Sys.Date()`"
+graphics: yes
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.align = "center")
+```
+
+```{r para, echo = FALSE, results='hide'}
+set.seed(1)
+```
+
+# Package Installation
+
+To install WHSITLE from Github, use the following code:
+
+```{r, eval = FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install(c("GenomicRanges","GenomicFeatures",
+                       "BSgenome","IRanges",
+                       "S4Vectors","GenomicScores",
+                       "AnnotationDbi","Biostrings",
+                       "TxDb.Hsapiens.UCSC.hg19.knownGene"))
+
+if (!requireNamespace("devtools", quietly = TRUE))
+    install.packages("devtools")
+
+devtools::install_github("ZW-xjtlu/WHSITLE", build_vignettes = TRUE)
+```
+
+If you want to annotate sequence and evolutionary conservation scores, please install the following packages (for hg19):
+
+```{r, eval=FALSE}
+BiocManager::install(c("BSgenome.Hsapiens.UCSC.hg19",
+                       "fitCons.UCSC.hg19",
+                       "phastCons100way.UCSC.hg19"))
+```
+
+
+# Annotation of transcriptomic Features
+
+## Introduction
+The ***WHSITLE*** R-package has been developed
+for the computational representation of the domain knowledge related to epitranscriptomic modifications, such as m6A, Pseudouridine, and m7G. The inputs of the main function ***transcriptomicFeatures*** are the `GRanges` object for range based RNA modification locations and the `TxDb` object for the transcript annotations with other optional annotation objects. The ***WHSITLE*** package has the following two key utilities:
+
+  * Annotating the features that are powerful in the machine learning prediction of the mRNA modifications.
+
+  * Elucidate the biological mechanisms of epitranscriptomic regulation by analyzing the statistical associations between the annotated features and other functional genomic features in field of epitranscriptomics.
+
+Transcript annotation can be provided as a GTF/GFF file, a ***TxDb*** object, or automatically downloaded from UCSC through the internet using `makeTxDbFromUCSC`.
+
+We will in the next see how the annotation of the transcriptomic features can be accomplished in a single command.
+
+## Generation of features on transcript topology
+
+Let us firstly load the WHSITLE package and the `TxDb` for transcript annotations.
+
+```{r,message=FALSE,warning=FALSE}
+library(WHSITLE)
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+
+txdb_hg19 <- TxDb.Hsapiens.UCSC.hg19.knownGene
+```
+
+The main functioon of ***WHSITLE*** R-package is to annotate transcriptomic features based on a range based RNA modification sites input (Sites in single based resolution are highly recommended). The necessary inputs of this function are the RNA modification site in `GRanges` object and the transcript annotation files in `TxDb` object. In oder to extract features other than transcriptomic topologies, additional annotation objects such as `BSgenome` and `GSscores` are required. Please see `?transcriptomicFeatures` for detailed explainations.
+
+```{r,warning=FALSE, message=FALSE, results = "hide"}
+feature_hg19 <- transcriptomicFeatures(
+   mod_gr = m6A_ex_hg19,
+   txdb = txdb_hg19
+)
+```
+
+The output is a `data.frame` object with the columns indicating the annoated features in dummy variables or real valued number data types. The `data.frame` table can be used in prediction models directly as the feature/predictor matrix. The prediction models could be linear regression such as `lm` and `glm` in R base functions, or other advanced machine learning models such as svm and random forest implemented in R package `caret`.
+
+```{r}
+str(feature_hg19) # Feature list as data.frame table
+```
+
+## Generation of the complete feature set 
+
+In general, the features annotated by `transcriptomicFeatures` belong to the following categories:
+
+- ***Topological Features***
+Features constructed from the transcriptomic landmarks. The toplogical features were previously reported by the published studies to associate with the locations of RNA modifiations.
+
+- ***Sequence Features***
+The sequence derived features that are related to epitranscriptomics, such as the sequence motifs and the predicted RNA secondary structures.
+
+- ***Functional Genomic Features***
+Features of other functional genomic information that have proofed correlation with the mRNA modifications, such as the functional types of the transcript, evolutionary conservation of the sequence, and the RBP binding sites of RNA modification writers, readers, and erasers.
+
+Please notice that, when only the TxDb object is provided, only the topological features will be completely annotated in the returned `data.frame` table.
+
+To generate the full feature set, please refer to the following code example for hg19.
+
+```{r,message=FALSE}
+library(BSgenome.Hsapiens.UCSC.hg19)
+library(fitCons.UCSC.hg19)
+library(phastCons100way.UCSC.hg19)
+
+#Generate complete explanatory feature set for epitranscriptomic modifications
+
+feature_hg19_complete <- transcriptomicFeatures(
+   mod_gr = m6A_ex_hg19,
+   
+# TxDb object for the transcript annotation.
+   txdb = txdb_hg19,
+
+# BSgenome object for the genome sequence.
+   bsgnm = Hsapiens,
+
+# GScores object for the Fitness Consequence scores.
+   fc = fitCons.UCSC.hg19,
+
+# GScores object for the PhastCons scores.
+   pc = phastCons100way.UCSC.hg19,
+
+# RNA fold predicted RNA secondary structures for hg19 exons.
+   struct_hybridize = Struc_hg19,
+
+# Binding sites of m6A regulators.
+   genomic_annot = RBP_m6A_hg19,
+
+# Entrez gene ids of house keeping genes.
+   hk_genes_id = hkGene_eid_hg19,
+
+# Entrez gene ids of microRNA targeted genes.
+   miRtar_genes_id = miRtarGene_eid_hg19,
+
+# Instances of DRACH motif for m6A modification.
+   motif = c("AAACA","AGACA","AAACT","AGACT","AAACC","AGACC",
+             "GAACA","GGACA","GAACT","GGACT","GAACC","GGACC",
+             "TAACA","TGACA","TAACT","TGACT","TAACC","TGACC"),
+
+# The clustering effect on DRACH motifs.
+   motif_clustering = "DRACH",
+
+# The clustering on the input modification Granges.
+   annot_clustering = m6A_ex_hg19
+)
+```
+
+## Contact
+
+Please contact the maintainer of WHSITLE if you have encountered any problems:
+
+**ZhenWei**:  <zhen.wei@xjtlu.edu.cn>
+
+## Session Info
+```{r}
+sessionInfo()
+```

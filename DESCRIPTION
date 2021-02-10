@@ -1,0 +1,18 @@
+Package: WHISTLE
+Type: Package
+Title: Annotation of explanatory transcriptomic features for the
+        prediction of epitranscriptomic modifications.
+Version: 0.99.1
+Date: 2020-2-10
+Author: Zhen Wei
+Maintainer: Zhen Wei <zhen.wei10@icloud.com>
+Description: WHISTLE is an R package for annotating explanatory transcriptomic features that are powerful in the machine learning prediction of the epitranscriptomic modifications. The package provides the computational representation of the known topological and functional genomic features related to the mRNA modifications. The input of WHISTLE is the range based site information in Granges object. Then, WHISTLE will automatically retrieve transcriptomic features from the corresponding database packages to return a summarized feature matrix. In addition, the feature set annotated can be expanded and tailored on the specific application domain according to user's requirement.
+License: GPL (>= 2)
+Imports: GenomicRanges,GenomicFeatures,BSgenome,IRanges,S4Vectors,GenomicScores,AnnotationDbi,Biostrings,TxDb.Hsapiens.UCSC.hg19.knownGene
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.1.0
+Suggests: knitr, rmarkdown
+VignetteBuilder: knitr
+NeedsCompilation: no
+Packaged: 2020-01-21 09:49:41 UTC; zhenwei
