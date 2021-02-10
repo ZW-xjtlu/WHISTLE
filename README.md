@@ -163,7 +163,7 @@ feature_hg19_complete <- transcriptomicFeatures(
     ##    __  __  __ _______________    ______ 
     ##   / / / / / // / ___/_  __/ /   /  ___/ 
     ##  / / / / / // /\__ \ / / / /   /  ___/
-    ## / /_/ /_/ // /___/ // / / /___/ /___/ 
+    ## / /_/ /_/ // /___/ // / / /___/ /___ 
     ## \___/\___//_/_____//_/ /_____/_____/     version 1.0.1 
     ## Type 'citation("WHISTLE")' for citing this R package in publications.
     ## Extracting exons, transcripts, and genes ... OK
